@@ -1,8 +1,8 @@
 const CACHE_NAME = 'webmap-cache-v1';
 const urlsToCache = [
-  '/',
-  '/static/css/styles.css',
-  '/static/js/scripts.js',
+ // '/',
+//'/static/css/styles.css',
+//  '/static/js/scripts.js',
   // Add other URLs to cache
 ];
 
