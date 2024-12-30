@@ -1,0 +1,460 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Station Search</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.css" />
+    <link rel="manifest" href="/manifest.json"> <!-- Served at root by django-pwa -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register("{% static 'serviceworker.js' %}")
+                .then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                })
+                .catch(function(error) {
+                    console.error('ServiceWorker registration failed: ', error);
+                });
+        }
+    </script>
+
+    <style>
+        /* Additional styling for the Directions Sidebar */
+        #directionsSidebar {
+            max-width: 600px; /* Increase the width */
+            margin: 20px auto;
+        }
+
+        .card-header h4 {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .list-group-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            font-size: 1rem;
+        }
+
+        .list-group-item i {
+            margin-right: 10px;
+            font-size: 18px;
+            color: #007bff;
+        }
+
+        .list-group-item:hover {
+            background-color: #e9ecef;
+            cursor: pointer;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .directions-sidebar {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-img-container {
+            height: 250px; /* Set a fixed height for the images */
+            overflow: hidden;
+        }
+
+        .card-img-top {
+            width: 100%;  /* Make the image fill the container */
+            height: 100%;
+            object-fit: cover; /* Ensures the image covers the container area without stretching */
+        }
+
+        .card-body {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .container {
+            margin-top: 40px;
+        }
+
+        .row {
+            margin-top: 20px;
+        }
+        .rating .fas {
+        color: rgb(245, 245, 96); /* Color for filled stars */
+    }
+
+    .rating .far {
+        color: lightgray; /* Color for empty stars */
+    }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="bg-primary text-white py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">Gas Stations Finder</h1>
+            <nav>
+                <ul class="nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm" href="{% url 'user_profile' %}">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm" href="{% url 'register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+
+    <!-- Form for searching gas stations -->
+    <div class="container mt-4">
+        <form method="POST" action="{% url 'search_gas_stations' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="address">Enter Address or Location</label>
+                <input type="text" name="address" id="address" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="station_name">Gas Station Name (optional)</label>
+                <input type="text" name="station_name" id="station_name" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <!-- Results Section -->
+    <div class="container mt-4">
+        {% if results %}
+            <h2>Results:</h2>
+            <ul class="list-group">
+                {% for station in results %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ station.name|default:"Unnamed Station" }}</strong>
+                            <p>Address: {{ station.address|default:"Unknown Address" }}</p>
+                            <p>Price: ${{ station.current_price }}</p>
+                            <p>Rating: {{ station.user_rating|default:"Not Available" }}</p>
+                            <p>Coordinates: ({{ station.location.y }}, {{ station.location.x }})</p>
+                            <p>Distance: {{ station.distance|floatformat:2 }} km</p>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary btn-sm mb-2" onclick="showRoute({{ station.location.y }}, {{ station.location.x }})">
+                                Get Directions
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm favorite-btn" 
+                                data-id="{{ station.id }}" 
+                                onclick="toggleFavorite({{ station.id }})">
+                                <span id="fav-icon-{{ station.id }}" class="fas fa-heart"></span> 
+                                <span id="fav-text-{{ station.id }}">{% if station.id in favorites %} Remove from Favorites {% else %} Save to Favorites {% endif %}</span>
+                            </button>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <li class="list-group-item">No gas stations found nearby.</li>
+        {% endif %}
+    </div>
+        <!-- Featured Gas Stations Section -->
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Featured Gas Stations</h2>
+        <div class="row">
+            <!-- Gas Station 1 -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-img-container">
+                        <img src="{% static 'images/circlek.jpg' %}" class="card-img-top" alt="Gas Station 1">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Circle K</h5>
+                        <p class="card-text">Collinstown, County Dublin</p>
+                        <p class="card-text">
+                            Rating: <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </span>
+                            4.5/5
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gas Station 2 -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-img-container">
+                        <img src="{% static 'images/applegreen1.jpg' %}" class="card-img-top" alt="Gas Station 2">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Applegreen</h5>
+                        <p class="card-text">Limerick Rd</p>
+                        <p class="card-text">
+                            Rating: <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </span>
+                            4.2/5
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gas Station 3 -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-img-container">
+                        <img src="{% static 'images/top.jpg' %}" class="card-img-top" alt="Gas Station 3">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Top Oil</h5>
+                        <p class="card-text">Ennis, County Clare</p>
+                        <p class="card-text">
+                            Rating: <span class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </span>
+                            4.8/5
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Section -->
+    <div id="map" style="height: 400px;" class="container mt-4"></div>
+
+    <!-- Directions Sidebar -->
+    <div id="directionsSidebar" class="container mt-4" style="display: none;">
+        <div class="card shadow-sm directions-sidebar">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Directions</h4>
+            </div>
+            <div class="card-body">
+                <ul id="directionsList" class="list-group">
+                    <!-- Directions will be listed here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
+
+    <script>
+        // Function to toggle favorite status of a gas station
+            // Function to toggle favorite status of a gas station
+            function toggleFavorite(stationId) {
+                const favoriteButton = document.querySelector(`#fav-icon-${stationId}`);
+                const favoriteText = document.querySelector(`#fav-text-${stationId}`);
+                
+                // Updated actionUrl with the correct path prefix
+                const actionUrl = favoriteText.innerText.trim() === "Save to Favorites"
+                    ? `/api/v1/add-to-favorites/${stationId}/`
+                    : `/api/v1/remove-from-favorites/${stationId}/`;
+
+                console.log(actionUrl);  // Log the URL to verify
+                fetch(actionUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.message) {
+                        // Displaying a confirmation message to the user
+                        alert(data.message);
+
+                        // If added to favorites, update the button text and style
+                        if (favoriteText.innerText.trim() === "Save to Favorites") {
+                            favoriteText.innerText = "Remove from Favorites";
+                            favoriteButton.classList.add('text-danger');
+                            
+                            // Display pop-up confirmation for successful addition
+                            showPopup('Added to Favorites', 'success');
+                        } else {
+                            favoriteText.innerText = "Save to Favorites";
+                            favoriteButton.classList.remove('text-danger');
+                            
+                            // Display pop-up confirmation for removal
+                            showPopup('Removed from Favorites', 'warning');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+        // Function to show a custom pop-up message
+        function showPopup(message, type) {
+            // You can use any library like SweetAlert, but here's a simple implementation
+            const popup = document.createElement("div");
+            popup.classList.add("popup");
+            popup.classList.add(type);  // Add class based on message type (success, warning)
+
+            popup.innerHTML = `
+                <div class="popup-message">
+                    <span>${message}</span>
+                    <button class="close-popup" onclick="closePopup(this)">X</button>
+                </div>
+            `;
+
+            document.body.appendChild(popup);
+            
+            // Auto-close the popup after 3 seconds
+            setTimeout(() => closePopup(popup), 3000);
+        }
+
+        // Function to close the pop-up
+        function closePopup(popup) {
+            popup.remove();
+        }
+
+        // Initialize map
+        var map = L.map('map').setView([{{ user_location.0|default:"53.3498" }}, {{ user_location.1|default:"-6.2603" }}], 13);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Add marker for user's location if available
+        {% if user_location %}
+            L.marker([{{ user_location.0 }}, {{ user_location.1 }}]).addTo(map)
+                .bindPopup("<b>Your Location</b>").openPopup();
+        {% endif %}
+
+        // Add markers for each gas station
+        {% for station in results %}
+            L.marker([{{ station.location.y }}, {{ station.location.x }}]).addTo(map)
+                .bindPopup("<b>{{ station.name|default:'Unnamed Station' }}</b><br>{{ station.address|default:'Unknown Address' }}");
+        {% endfor %}
+
+        // Routing control variable
+        var routingControl;
+
+        // Function to show route from user's location to selected gas station
+        function showRoute(lat, lng) {
+            // Remove any existing route
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Create a new route from user's location to the selected gas station
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng({{ user_location.0 }}, {{ user_location.1 }}), // User's location
+                    L.latLng(lat, lng) // Gas station location
+                ],
+                routeWhileDragging: true,
+                show: true,
+                createMarker: function(i, waypoint, n) {
+                    return L.marker(waypoint.latLng);
+                },
+                lineOptions: {
+                    styles: [{ color: '#007bff', weight: 4, opacity: 0.7 }] // Custom route line style
+                }
+            }).addTo(map);
+
+            // Show the directions sidebar
+            document.getElementById("directionsSidebar").style.display = "block";
+            
+            // Clear any previous directions
+            document.getElementById("directionsList").innerHTML = "";
+
+            // Get the route's instructions and display them
+            routingControl.on('routesfound', function(e) {
+                var routes = e.routes[0].instructions;
+                routes.forEach(function(step) {
+                    var listItem = document.createElement("li");
+                    listItem.classList.add("list-group-item");
+
+                    // Add an icon for each step
+                    var icon = document.createElement("i");
+                    icon.classList.add("fas", "fa-arrow-right");  // You can use different icons
+                    listItem.appendChild(icon);
+
+                    // Add the text of the direction step
+                    listItem.appendChild(document.createTextNode(step.text));
+
+                    // Append the direction item to the list
+                    document.getElementById("directionsList").appendChild(listItem);
+                });
+            });
+        }
+    </script>
+
+    <!-- Footer Section -->
+    <footer class="bg-primary text-white py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2024 Gas Stations Finder. All rights reserved.</p>
+            <p>
+                <a href="/privacy-policy" class="text-white">Privacy Policy</a> |
+                <a href="/terms" class="text-white">Terms of Service</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
