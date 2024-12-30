@@ -38,8 +38,7 @@ DEBUG = False
 
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com', 'localhost']
-
-ALLOWED_HOSTS = ['your-app-name.herokuapp.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['gas-station-finder-app-80f702109b4d.herokuapp.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -292,3 +291,6 @@ LOGIN_REDIRECT_URL = '/'   # Redirect to home after login
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+
+
+django_heroku.settings(locals())
