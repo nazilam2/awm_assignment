@@ -281,7 +281,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 import os
 #GDAL_LIBRARY_PATH = r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\gdal.dll'
 GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\gdal.dll')
-GEOS_LIBRARY_PATH = r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\geos_c.dll'
 
 
 
