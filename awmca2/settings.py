@@ -229,13 +229,23 @@ WSGI_APPLICATION = "awmca2.wsgi.application"
 #     }
 # }
 
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default='postgres://localhost/gas_station_database',  # fallback for local dev
+#         conn_max_age=600,  # connection reuse
+#         ssl_require=True,  # ensures SSL is used in production (Heroku)
+#     )
+# }
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://localhost/gas_station_database',  # fallback for local dev
-        conn_max_age=600,  # connection reuse
-        ssl_require=True,  # ensures SSL is used in production (Heroku)
-    )
-}
+     'default': {
+         'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
+         'NAME': 'gas_station_database',  # Database name
+         'USER': 'postgres',  # Username
+         'PASSWORD': 'password',  # Password
+         'HOST': 'localhost',  # Host
+         'PORT': '5432',  # Port
+     }
+ }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
