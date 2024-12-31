@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'pwa',
     'myapp',
     'rest_framework',
@@ -166,13 +167,14 @@ LEAFLET_CONFIG = {
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    
 ]
 
 ROOT_URLCONF = "awmca2.urls"
@@ -212,8 +214,20 @@ WSGI_APPLICATION = "awmca2.wsgi.application"
 #     }
 # }
 
+# DATABASES = {
+#      'default': dj_database_url.config(
+#          default='postgres://uaodt6ro3jmkqu:p747066a598e26f9a65cbb4621adfa35892aa9604323c84fa1e2c9a21586473f4@c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d6toit0l00v9qc', conn_max_age=600, ssl_require=True)
+#  }
+
 DATABASES = {
-    'default': dj_database_url.config(default='postgres://uaodt6ro3jmkqu:p747066a598e26f9a65cbb4621adfa35892aa9604323c84fa1e2c9a21586473f4@c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d6toit0l00v9qc', conn_max_age=600, ssl_require=True)
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
+        'NAME': 'd6toit0l00v9qc',  # Database name
+        'USER': 'uaodt6ro3jmkqu',  # Username
+        'PASSWORD': 'p747066a598e26f9a65cbb4621adfa35892aa9604323c84fa1e2c9a21586473f4',  # Password
+        'HOST': 'c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com',  # Host
+        'PORT': '5432',  # Port
+    }
 }
 
 # Password validation
@@ -268,6 +282,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 import os
 #GDAL_LIBRARY_PATH = r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\gdal.dll'
 GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\gdal.dll')
+GEOS_LIBRARY_PATH = r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\geos_c.dll'
+
 
 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -278,7 +294,9 @@ CORS_ORIGIN_WHITELIST = [
 
     'http://localhost:8000',
 
-    'http://127.0.0.1:8000'
+    'http://127.0.0.1:8000' , 
+
+    'https://gas-station-finder-app-80f702109b4d.herokuapp.com'
 
 ]
 
