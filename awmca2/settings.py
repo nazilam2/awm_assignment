@@ -201,57 +201,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "awmca2.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
-#         'NAME': 'gas_station_database',
-#         'USER': 'postgres',  # replace with your PostgreSQL username
-#         'PASSWORD': 'password',  # replace with your PostgreSQL password
-#         'HOST': 'localhost',  # or the appropriate host
-#         'PORT': '5432',  # default PostgreSQL port
-#     }
-# }
-
-# DATABASES = {
-#      'default': dj_database_url.config(
-#          default='postgres://uaodt6ro3jmkqu:p747066a598e26f9a65cbb4621adfa35892aa9604323c84fa1e2c9a21586473f4@c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com:5432/d6toit0l00v9qc', conn_max_age=600, ssl_require=True)
-#  }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
-#         'NAME': 'd6toit0l00v9qc',  # Database name
-#         'USER': 'uaodt6ro3jmkqu',  # Username
-#         'PASSWORD': 'p747066a598e26f9a65cbb4621adfa35892aa9604323c84fa1e2c9a21586473f4',  # Password
-#         'HOST': 'c3l5o0rb2a6o4l.cluster-czz5s0kz4scl.eu-west-1.rds.amazonaws.com',  # Host
-#         'PORT': '5432',  # Port
-#     }
-# }
-
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default='postgres://localhost/gas_station_database',  # fallback for local dev
-#         conn_max_age=600,  # connection reuse
-#         ssl_require=True,  # ensures SSL is used in production (Heroku)
-#     )
-# }
-
-# DATABASES = {
-#      'default': {
-#          'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
-#          'NAME': 'gas_station_database',  # Database name
-#          'USER': 'postgres',  # Username
-#          'PASSWORD': 'password',  # Password
-#          'HOST': 'localhost',  # Host
-#          'PORT': '5432',  # Port
-#      }
-#  }
-
-
 if os.getenv('DATABASE_URL'):  # This checks if we're in production
     DATABASES = {
         'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
