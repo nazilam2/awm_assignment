@@ -35,6 +35,7 @@ SECRET_KEY = "django-insecure-=&h^@av&#a%n=4la-o5)tm%@(_x1-hv%z*+c11k#@^#01+c=x1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+#DEBUG = 'HEROKU_DEBUG' in os.environ
 
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com', 'localhost']
@@ -237,16 +238,35 @@ WSGI_APPLICATION = "awmca2.wsgi.application"
 #         ssl_require=True,  # ensures SSL is used in production (Heroku)
 #     )
 # }
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
-         'NAME': 'gas_station_database',  # Database name
-         'USER': 'postgres',  # Username
-         'PASSWORD': 'password',  # Password
-         'HOST': 'localhost',  # Host
-         'PORT': '5432',  # Port
-     }
- }
+
+# DATABASES = {
+#      'default': {
+#          'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS
+#          'NAME': 'gas_station_database',  # Database name
+#          'USER': 'postgres',  # Username
+#          'PASSWORD': 'password',  # Password
+#          'HOST': 'localhost',  # Host
+#          'PORT': '5432',  # Port
+#      }
+#  }
+
+
+if os.getenv('DATABASE_URL'):  # This checks if we're in production
+    DATABASES = {
+        'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    }
+else:
+    # Local development configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Use PostGIS backend
+            'NAME': 'gas_station_database',  # Your local database name
+            'USER': 'postgres',  # Your PostgreSQL username
+            'PASSWORD': 'password',  # Your PostgreSQL password
+            'HOST': 'localhost',  # Database host (localhost for local)
+            'PORT': '5432',  # Default PostgreSQL port
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
