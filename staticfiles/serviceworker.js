@@ -5,11 +5,19 @@ const urlsToCache = [
     '/static/js/scripts.js',   // Update with your actual JS path
     '/static/images/icons/icon-192x192.png', // Add all icons and assets needed for offline use
     '/static/images/icons/icon-512x512.png',
-    '/base.html',             // Example if you want to cache index.html
-    // Add other URLs for assets that need to be available offline
     //'/base.html',             // Example if you want to cache index.html
+    // Add other URLs for assets that need to be available offline
+    '/myapp/templates/base.html',             // Example if you want to cache index.html
+    '/myapp/templates/login.html',             // Example if you want to cache index.html
+    '/myapp/templates/register.html',             // Example if you want to cache index.html
+    '/myapp/templates/profile.html',             // Example if you want to cache index.html
+
+
+
 
 ];
+
+
 
 // Install event: caches necessary resources
 self.addEventListener('install', event => {
