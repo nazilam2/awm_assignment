@@ -40,6 +40,7 @@ DEBUG = False
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com', 'localhost']
 ALLOWED_HOSTS = ['gas-station-finder-app-80f702109b4d.herokuapp.com', 'localhost', '127.0.0.1']
+API_BASE_URL = 'http://127.0.0.1:8000/api/v1/'  # Default: local URL
 
 
 # Application definition
@@ -320,8 +321,7 @@ import os
 #GDAL_LIBRARY_PATH = r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\gdal.dll'
 GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH', r'C:\Users\Nazil\anaconda3\envs\awm_env\Library\bin\gdal.dll')
 
-GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH', '/app/.heroku/vendor/lib/libgdal.so')
-GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', '/app/.heroku/vendor/lib/libgeos_c.so')
+
 
 
 
