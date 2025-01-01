@@ -339,6 +339,10 @@ CORS_ORIGIN_WHITELIST = [
 
 ]
 
+# added new 
+CSRF_TRUSTED_ORIGINS = [
+    "https://gas-station-finder-app-80f702109b4d.herokuapp.com",
+]
 
 # This is for login 
 # Add authentication configuration
